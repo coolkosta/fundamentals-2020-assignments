@@ -54,14 +54,28 @@ class WS03CoroutinesProblemFragment : Fragment(R.layout.fragment_ws_03) {
         toggleButtons(true)
 
         // TODO: WS_5_03_1 - Add run odd number producing coroutine via launch in scope
+        scope.launch {
+            runOddsCoroutine()
+        }
 
         // TODO: WS_5_03_2 - Add run negatives number producing coroutine via launch in scope
 
+        scope.launch {
+            runNegativesCoroutine()
+        }
+
         // TODO: WS_5_03_3 - Add run mod by two result from number coroutine via launch in scope
+        scope.launch {
+            runModByTwoCoroutine()
+        }
         // TODO: WS_5_03_7 - Add run mod by two result from number coroutine via launch in GlobalScope
         // TODO: Don't forget to save job for the future cancellation
+        globalScopeJob = GlobalScope.launch { runModByTwoCoroutine() }
 
         // TODO: WS_5_03_4 - Add run coroutine that fails after a second
+        scope.launch {
+            runCoroutineThatFails()
+        }
     }
 
     // Coroutine that produces odd numbers every second
@@ -102,15 +116,17 @@ class WS03CoroutinesProblemFragment : Fragment(R.layout.fragment_ws_03) {
         throw IllegalStateException("Some exception")
     }
 
-    private fun showResult(text: String, resultView: TextView?) {
+    private suspend fun showResult(text: String, resultView: TextView?) {
         // TODO: WS_5_03_6 - Fix access of UI component from main dispatcher
         // TODO: Don't forget about suspend keyword
-        resultView?.text = text
+        withContext(Dispatchers.Main) {
+            resultView?.text = text
+        }
     }
 
     private fun cancelCoroutines() {
         // TODO: WS_5_03_5 - Add cancellation of all current jobs via parent job
-
+        scope.cancel()
         // Set new scope with fresh SupervisorJob after cancel
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + exceptionHandler)
 
@@ -139,6 +155,7 @@ class WS03CoroutinesProblemFragment : Fragment(R.layout.fragment_ws_03) {
     override fun onDestroyView() {
         // TODO: WS_5_03_8 - Add Global Scope job cancelling to avoid leaks
         // TODO: use WS03CoroutinesProblemFragment#globalScopeJob
+        globalScopeJob?.cancel()
 
         // TODO: WS_5_03_11 - Stop jobs to avoid leaks
 
